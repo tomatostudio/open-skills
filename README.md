@@ -89,6 +89,24 @@ Configure Claude Desktop to use this MCP server:
    - Add the MCP server configuration
    - Restart Claude Desktop
 
+**OpenCode Configuration**
+For OpenCode users, create `~/.config/opencode/opencode.json`:
+
+![OpenCode Example](opencode-example.png)
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "open-skills": {
+      "type": "remote",
+      "url": "http://open-skills.local:8222/mcp",
+      "enabled": true
+    }
+  }
+}
+```
+
 ### Option 2: Gemini CLI Configuration
 
 Edit `~/.gemini/settings.json`:
@@ -229,10 +247,23 @@ This MCP server provides a compatibility layer that lets you run Claude's skills
 - Claude's path: `/mnt/user-data` → Local path: `/app/uploads`
 - Skills designed for Claude work locally without any changes
 
-**Accessing Your Local Files:**
-- Place files in `~/.open-skills/assets/outputs` on your Mac
-- They become available to skills inside the container via volume mounts
-- The mapping is automatic - skills can access your files without cloud upload
+**File Sharing - How to Share Files with Skills:**
+To share your local files with skills for processing:
+
+1. **Place files in the outputs directory:**
+   ```bash
+   cp your-file.pdf ~/.open-skills/assets/outputs/
+   cp your-image.png ~/.open-skills/assets/outputs/
+   ```
+
+2. **Files become available inside the container:**
+   - Your files in `~/.open-skills/assets/outputs/` are automatically mounted
+   - Skills can access them via `/mnt/user-data/` (the standard Claude path)
+   - No manual copying or cloud uploads required
+
+3. **Processed files appear in the same directory:**
+   - Output files are saved back to `~/.open-skills/assets/outputs/`
+   - You can access results immediately on your Mac
 
 **Skill Structure:**
 - No changes needed to imported skills
