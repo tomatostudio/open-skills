@@ -89,7 +89,8 @@ Configure Claude Desktop to use this MCP server:
    - Add the MCP server configuration
    - Restart Claude Desktop
 
-**OpenCode Configuration**
+### Option 2: OpenCode Configuration
+
 For OpenCode users, create `~/.config/opencode/opencode.json`:
 
 ![OpenCode Example](opencode-example.png)
@@ -107,7 +108,7 @@ For OpenCode users, create `~/.config/opencode/opencode.json`:
 }
 ```
 
-### Option 2: Gemini CLI Configuration
+### Option 3: Gemini CLI Configuration
 
 Edit `~/.gemini/settings.json`:
 
