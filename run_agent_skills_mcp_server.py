@@ -12,12 +12,12 @@ def main() -> None:
     parser.add_argument(
         "--transport",
         choices=["stdio", "http", "sse", "streamable-http"],
-        default="stdio",
-        help="MCP transport (default: stdio)",
+        default="streamable-http",
+        help="MCP transport (default: streamable-http)",
     )
-    parser.add_argument("--host", default=None, help="HTTP host to bind to (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=None, help="HTTP port to bind to (default: 8000)")
-    parser.add_argument("--path", default=None, help="HTTP path to serve MCP (default: /mcp)")
+    parser.add_argument("--host", default="127.0.0.1", help="HTTP host to bind to (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=8000, help="HTTP port to bind to (default: 8000)")
+    parser.add_argument("--path", default="/mcp", help="HTTP path to serve MCP (default: /mcp)")
     args = parser.parse_args()
 
     config = RuntimeConfig.from_env(skills_dir=args.skills_dir)
@@ -39,12 +39,9 @@ def main() -> None:
     server = AgentSkillsMCPServer(config)
     transport_kwargs = {}
     if args.transport in {"http", "sse", "streamable-http"}:
-        if args.host:
-            transport_kwargs["host"] = args.host
-        if args.port:
-            transport_kwargs["port"] = args.port
-        if args.path:
-            transport_kwargs["path"] = args.path
+        transport_kwargs["host"] = args.host
+        transport_kwargs["port"] = args.port
+        transport_kwargs["path"] = args.path
     server.run(transport=args.transport, **transport_kwargs)
 
 
