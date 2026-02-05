@@ -42,15 +42,18 @@ class SkillParser:
         body_lines = []
         in_frontmatter = False
         closed = False
+        started = False
 
         for line in lines:
             if line.strip() == "---":
-                if not in_frontmatter:
+                if not started:
+                    started = True
                     in_frontmatter = True
                     continue
-                closed = True
-                in_frontmatter = False
-                continue
+                if in_frontmatter:
+                    closed = True
+                    in_frontmatter = False
+                    continue
             if in_frontmatter:
                 frontmatter_lines.append(line)
             else:

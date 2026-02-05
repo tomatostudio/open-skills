@@ -29,7 +29,7 @@ class AgentSkillsMCPServer:
             asyncio.create_task(self._auto_reload())
 
     def _register_tools(self) -> None:
-        @self._mcp.tool()
+        @self._mcp.tool(description="List all available skills with their metadata, input/output schemas")
         async def list_skills() -> Dict[str, Any]:
             skills = self._registry.list_skills()
             return {
@@ -46,7 +46,7 @@ class AgentSkillsMCPServer:
                 ]
             }
 
-        @self._mcp.tool()
+        @self._mcp.tool(description="Get detailed information about a specific skill including its entrypoint and full metadata")
         async def get_skill(skill_name: str) -> Dict[str, Any]:
             skill = self._registry.get_skill(skill_name)
             if not skill:
@@ -62,7 +62,7 @@ class AgentSkillsMCPServer:
                 "metadata": skill.metadata,
             }
 
-        @self._mcp.tool()
+        @self._mcp.tool(description="Execute a skill with the provided input payload and return the result")
         async def invoke_skill(skill_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             skill = self._registry.get_skill(skill_name)
             if not skill:
@@ -75,7 +75,7 @@ class AgentSkillsMCPServer:
                 "error": result.error,
             }
 
-        @self._mcp.tool()
+        @self._mcp.tool(description="Reload all skills from disk to pick up any changes")
         async def reload_skills() -> Dict[str, Any]:
             self._registry.reload()
             return {"status": "reloaded", "count": len(self._registry.list_skills())}
