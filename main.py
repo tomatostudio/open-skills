@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 
-from agent_skills_runtime import AgentSkillsMCPServer, RuntimeConfig
+from core import AgentSkillsMCPServer, RuntimeConfig
 
 
 def main() -> None:
