@@ -85,5 +85,5 @@ class AgentSkillsMCPServer:
             await asyncio.sleep(self.config.reload_interval_seconds)
             self._registry.reload()
 
-    def run(self) -> None:
-        self._mcp.run()
+    def run(self, transport: str | None = None, **transport_kwargs: Any) -> None:
+        self._mcp.run(transport=transport, **transport_kwargs)

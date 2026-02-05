@@ -66,7 +66,17 @@ The entrypoint should print JSON to STDOUT:
 python run_agent_skills_mcp_server.py \
   --skills-dir ~/.open-skills/assets/skills/user \
   --timeout 30 \
-  --reload-interval 10
+  --reload-interval 10 \
+  --transport streamable-http \
+  --host 127.0.0.1 \
+  --port 8000 \
+  --path /mcp
+```
+
+By default the server runs with `stdio` transport (no HTTP address). To expose HTTP, use `--transport streamable-http` (or `http`/`sse`) and then connect to:
+
+```
+http://<host>:<port><path>
 ```
 
 ## Environment Configuration

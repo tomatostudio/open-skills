@@ -9,6 +9,15 @@ def main() -> None:
     parser.add_argument("--skills-dir", default=None, help="Directory containing skill folders")
     parser.add_argument("--timeout", type=int, default=None, help="Skill execution timeout in seconds")
     parser.add_argument("--reload-interval", type=int, default=None, help="Auto-reload interval in seconds")
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "http", "sse", "streamable-http"],
+        default="stdio",
+        help="MCP transport (default: stdio)",
+    )
+    parser.add_argument("--host", default=None, help="HTTP host to bind to (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=None, help="HTTP port to bind to (default: 8000)")
+    parser.add_argument("--path", default=None, help="HTTP path to serve MCP (default: /mcp)")
     args = parser.parse_args()
 
     config = RuntimeConfig.from_env(skills_dir=args.skills_dir)
@@ -28,7 +37,15 @@ def main() -> None:
         )
 
     server = AgentSkillsMCPServer(config)
-    server.run()
+    transport_kwargs = {}
+    if args.transport in {"http", "sse", "streamable-http"}:
+        if args.host:
+            transport_kwargs["host"] = args.host
+        if args.port:
+            transport_kwargs["port"] = args.port
+        if args.path:
+            transport_kwargs["path"] = args.path
+    server.run(transport=args.transport, **transport_kwargs)
 
 
 if __name__ == "__main__":
