@@ -1,14 +1,14 @@
 # Agent Skills Runtime over MCP
 
-This runtime implements Anthropic Agent Skills as a **live MCP server**, allowing maxKB to discover, inspect, and invoke skills dynamically. Skills are loaded from disk at runtime, parsed from `SKILL.md`, and executed on demand.
+This runtime implements Anthropic Agent Skills as a **live MCP server**, allowing maxKB to discover, inspect, and load skills dynamically. Skills are loaded from disk at runtime, parsed from `SKILL.md`, and either used as instructional context or (optionally) executed via bundled scripts.
 
 ## Architecture Overview
 
 - **SkillRepository**: discovers skills from a filesystem root (e.g., `~/.open-skills/assets/skills/user`).
 - **SkillParser**: parses `SKILL.md` frontmatter + markdown body into a `SkillDefinition`.
 - **SkillRegistry**: caches parsed skills and supports hot reload.
-- **SkillRuntime**: invokes skill entrypoints with structured JSON payloads.
-- **MCP Server**: exposes `list_skills`, `get_skill`, `invoke_skill`, and `reload_skills` tools.
+- **SkillRuntime**: runs optional scripts bundled with a skill.
+- **MCP Server**: exposes `list_skills`, `describe_skill`, `load_skill_body`, `list_skill_resources`, `run_skill_script`, and `reload_skills` tools.
 
 ## Skill Directory Layout
 
@@ -20,45 +20,29 @@ This runtime implements Anthropic Agent Skills as a **live MCP server**, allowin
       run.py
 ```
 
-`SKILL.md` frontmatter is the source of truth and supports:
+`SKILL.md` frontmatter is the source of truth and supports **only**:
 
 ```yaml
 ---
 name: sample-skill
 description: Example skill for runtime
-version: 1.0.0
-entrypoint: scripts/run.py
-input_schema:
-  type: object
-  properties:
-    text:
-      type: string
-  required: [text]
-output_schema:
-  type: object
-  properties:
-    result:
-      type: string
+license: MIT
 ---
 ```
 
-## Invocation Contract
+The markdown body contains the procedural guidance that the agent loads on demand.
 
-The runtime calls the entrypoint with JSON via STDIN:
+## Instructional vs Script-backed Skills
 
-```json
-{
-  "input": {"text": "hello"},
-  "context": {},
-  "skill": {"name": "sample-skill", "version": "1.0.0"}
-}
-```
+Skills are instruction-first. The default mode is to load the skill metadata and body to guide the agent. Scripts are optional accelerators stored under `scripts/`.
 
-The entrypoint should print JSON to STDOUT:
+If scripts exist, the MCP server exposes `run_skill_script` for explicit execution. Scripts are treated as black-box executables with no schema inference.
 
-```json
-{"result": "HELLO"}
-```
+## Progressive Disclosure Model
+
+- Metadata (name + description + license) is always loaded.
+- The `SKILL.md` body is loaded only after a skill is selected.
+- `scripts/` are executed only when explicitly requested.
 
 ## CLI Usage
 
@@ -91,8 +75,10 @@ http://<host>:<port><path>
 Point maxKB's MCP connector at the server URL. It can then:
 
 - Call `list_skills` to discover skills
-- Use `get_skill` to inspect a skill’s metadata
-- Call `invoke_skill` with structured JSON payloads to execute skills
+- Use `describe_skill` to inspect a skill’s metadata
+- Call `load_skill_body` to fetch the instructional content
+- Call `list_skill_resources` to enumerate bundled resources
+- Call `run_skill_script` to execute a specific script when present
 
 ## Example Skill
 

@@ -1,6 +1,6 @@
 from .config import RuntimeConfig
 from .mcp_server import AgentSkillsMCPServer
-from .models import SkillDefinition, SkillInvocation, SkillResult
+from .models import SkillDefinition, SkillResult
 from .parser import SkillParser
 from .registry import SkillRegistry
 from .repository import SkillRepository
@@ -10,7 +10,6 @@ __all__ = [
     "RuntimeConfig",
     "AgentSkillsMCPServer",
     "SkillDefinition",
-    "SkillInvocation",
     "SkillResult",
     "SkillParser",
     "SkillRegistry",

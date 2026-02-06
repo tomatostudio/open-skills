@@ -1,25 +1,19 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
 class SkillDefinition:
     name: str
     description: str
-    version: str
     path: Path
-    entrypoint: Optional[str] = None
-    input_schema: Dict[str, Any] = field(default_factory=dict)
-    output_schema: Dict[str, Any] = field(default_factory=dict)
+    body_markdown: str
+    references: List[str] = field(default_factory=list)
+    scripts: List[str] = field(default_factory=list)
+    assets: List[str] = field(default_factory=list)
+    license: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class SkillInvocation:
-    skill_name: str
-    payload: Dict[str, Any]
-    context: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

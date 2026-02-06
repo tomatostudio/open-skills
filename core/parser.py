@@ -1,4 +1,3 @@
-import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -9,27 +8,31 @@ logger = logging.getLogger(__name__)
 
 
 class SkillParser:
+    def __init__(self, strict_frontmatter: bool = False) -> None:
+        self.strict_frontmatter = strict_frontmatter
+
     def parse(self, skill_md_path: Path) -> SkillDefinition:
         content = skill_md_path.read_text(encoding="utf-8")
         metadata, body = self._parse_frontmatter(content)
 
-        name = metadata.get("name", skill_md_path.parent.name)
-        description = metadata.get("description", "")
-        version = metadata.get("version", "1.0.0")
-        entrypoint = metadata.get("entrypoint")
-        input_schema = self._read_schema(metadata.get("input_schema"))
-        output_schema = self._read_schema(metadata.get("output_schema"))
+        metadata = self._normalize_metadata(metadata, skill_md_path)
+        name = metadata["name"]
+        description = metadata["description"]
+        license_value = metadata.get("license")
 
-        metadata["body"] = body.strip()
+        references = self._collect_resources(skill_md_path.parent / "references")
+        scripts = self._collect_resources(skill_md_path.parent / "scripts")
+        assets = self._collect_resources(skill_md_path.parent / "assets")
 
         return SkillDefinition(
             name=name,
             description=description,
-            version=version,
             path=skill_md_path.parent,
-            entrypoint=entrypoint,
-            input_schema=input_schema or {},
-            output_schema=output_schema or {},
+            body_markdown=body.strip(),
+            references=references,
+            scripts=scripts,
+            assets=assets,
+            license=license_value,
             metadata=metadata,
         )
 
@@ -79,14 +82,28 @@ class SkillParser:
             return self._parse_simple_kv(content.splitlines())
         return yaml.safe_load(content) or {}
 
-    def _read_schema(self, value: Any) -> Dict[str, Any]:
-        if value is None:
-            return {}
-        if isinstance(value, dict):
-            return value
-        if isinstance(value, str):
-            try:
-                return json.loads(value)
-            except json.JSONDecodeError:
-                return {}
-        return {}
+    def _normalize_metadata(self, metadata: Dict[str, Any], skill_md_path: Path) -> Dict[str, Any]:
+        allowed_fields = {"name", "description", "license"}
+        extra_fields = set(metadata.keys()) - allowed_fields
+        if extra_fields:
+            message = f"Unsupported SKILL.md frontmatter fields: {', '.join(sorted(extra_fields))}"
+            if self.strict_frontmatter:
+                raise ValueError(message)
+            logger.warning("%s; ignoring extra fields.", message)
+            for field in extra_fields:
+                metadata.pop(field, None)
+
+        name = metadata.get("name")
+        description = metadata.get("description")
+        if not name or not description:
+            raise ValueError(f"SKILL.md missing required frontmatter fields at {skill_md_path}")
+        return metadata
+
+    def _collect_resources(self, directory: Path) -> list[str]:
+        if not directory.exists():
+            return []
+        resources: list[str] = []
+        for path in directory.rglob("*"):
+            if path.is_file():
+                resources.append(path.relative_to(directory.parent).as_posix())
+        return sorted(resources)
