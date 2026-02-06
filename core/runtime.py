@@ -15,7 +15,7 @@ class SkillRuntime:
 
     def invoke(self, skill: SkillDefinition, invocation: SkillInvocation) -> SkillResult:
         if not skill.entrypoint:
-            return SkillResult(success=False, output={}, error="Skill entrypoint not configured")
+            return SkillResult(success=True, output={"body": skill.metadata.get("body", "")})
 
         entrypoint_path = (skill.path / skill.entrypoint).resolve()
         if not entrypoint_path.exists():
